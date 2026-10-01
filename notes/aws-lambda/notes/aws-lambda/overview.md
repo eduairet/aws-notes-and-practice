@@ -34,3 +34,11 @@
      - In the monitoring tab, you can view metrics such as invocation count, duration, and error count for the Lambda function.
   7. You can also set up triggers for the Lambda function, such as an API Gateway endpoint, S3 bucket event, or CloudWatch event, to invoke the function in response to specific events.
   8. Delete the Lambda function when you're done testing to avoid incurring charges for unused resources.
+
+## Pricing
+
+- AWS Lambda pricing is based on the number of requests and the duration of code execution.
+- You are charged for the number of requests your functions receive and the time your code executes, measured in milliseconds.
+- The first 1 million requests per month and 400,000 GB-seconds of compute time per month are free under the AWS Free Tier.
+- Beyond the free tier, you are charged based on the number of requests and the duration of code execution, with rates varying by region.
+- For the most up-to-date pricing information, refer to the [AWS Lambda Pricing](https://aws.amazon.com/lambda/pricing/) page.
