@@ -21,7 +21,8 @@
 ## Content
 
 - [AWS Lambda Overview](notes/aws-lambda/overview.md)
-- [Serverless Framework](notes/aws-lambda/serverless-framework.md)/
+- [Serverless Framework](notes/aws-lambda/serverless-framework.md)
+- [AWS SAM CLI](notes/aws-lambda/aws-sam-cli.md)
 
 ## Reference
 
