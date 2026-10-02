@@ -12,4 +12,4 @@ AWS (Amazon Web Services) is a comprehensive cloud computing platform that provi
 
 ## Practice
 
-- AWS Lambda
+- [AWS SAM CLI](practice/aws-lambda/README.md)

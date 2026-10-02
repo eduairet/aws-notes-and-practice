@@ -141,3 +141,14 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# AWS SAM build artifacts (sam build / sam deploy)
+.aws-sam/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Rust (cargo / cargo-lambda)
+target/
