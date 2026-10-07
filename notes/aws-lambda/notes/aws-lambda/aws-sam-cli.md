@@ -157,3 +157,15 @@ What **neither** command deletes:
   ```
 
 For SAM projects, `sam delete` is the better choice. `delete-stack` is still worth knowing because it works for any CloudFormation stack, including ones not created with SAM.
+
+## AWS Toolkit
+
+As an alternative to using the SAM CLI directly, you can use the AWS Toolkit, which is available as an extension for popular IDEs like Visual Studio Code, JetBrains IDEs, and Eclipse. The AWS Toolkit provides a graphical interface for managing SAM applications, deploying stacks, and invoking Lambda functions locally or remotely.
+
+- First you'll need to install the AWS Toolkit extension for Visual Studio Code.
+- After installation, you'll need to configure your AWS credentials within the toolkit.
+- You can then use the AWS Toolkit to create, deploy, and manage your SAM applications directly from the IDE.
+- Example:
+  - Open the command palette in Visual Studio Code (usually by pressing `Ctrl+Shift+P` or `Cmd+Shift+P` on Mac).
+  - Search for "AWS: Create SAM Application" and follow the prompts to create a new SAM project.
+  - After the SAM project is created, you can use the AWS Toolkit to deploy and manage your application directly.
