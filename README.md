@@ -9,6 +9,7 @@ AWS (Amazon Web Services) is a comprehensive cloud computing platform that provi
 ## Notes
 
 - [AWS Lambda](notes/aws-lambda/README.md)
+- [Amazon SES](notes/amazon-ses/README.md)
 
 ## Practice
 
