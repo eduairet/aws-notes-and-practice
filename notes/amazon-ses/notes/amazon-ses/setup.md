@@ -64,4 +64,5 @@ Walkthrough for sending email from `hello@example.com` through SES, for a low-vo
 ## Gotchas
 
 - **Email identity beats domain identity**: if you verify both `hello@example.com` and `example.com`, SES uses the most specific one. Settings like a custom MAIL FROM set on the domain are ignored for that address. Once the domain is verified, delete the email-address identity so there's only one place to configure.
+- **The wizard's configuration set needs IAM permission**: the setup wizard can create a configuration set (`my-first-configuration-set`) that SES applies to every send. A least-privilege IAM user then gets `403 AccessDeniedException` until its policy also allows that configuration set. See [IAM credentials](iam-credentials.md#403-accessdeniedexception-on-a-configuration-set).
 - **Don't let a form relay arbitrary text**: if your form sends a confirmation to the address the visitor typed, make that email fixed content. Echoing the visitor's message or name lets anyone use your domain to send their text to any address.
