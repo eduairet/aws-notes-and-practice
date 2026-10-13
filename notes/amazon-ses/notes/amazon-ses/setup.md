@@ -61,6 +61,23 @@ Walkthrough for sending email from `hello@example.com` through SES, for a low-vo
 4. AWS may follow up with questions. A good use-case answer says: what triggers each email, the expected volume, that recipients enter their own address (no bought lists), how bots are blocked (CAPTCHA, validation) and how bounces are handled.
 5. Approval can take minutes to a day. Afterwards you can send to any address, and the quota goes up.
 
+## Protecting a Contact Form from Abuse
+
+- **The risk**: if the form sends a confirmation to the address the visitor typed, a bot that passes the CAPTCHA can make you send that email to strangers. Even with fixed content, people who never wrote to you may mark it as spam.
+- **Why it matters**: SES puts the account under review at a 5% bounce rate or a 0.1% complaint rate, and may pause sending at 10% or 0.5% (as of October 2026). A pause also stops the copy the form sends to you.
+- **Rate limit the endpoint**: add a firewall rule in front of the form's API, for example 5 `POST` requests per IP every 10 minutes, answered with `429`. A real person never hits it. Keep it in the firewall, not in memory: serverless instances don't share memory.
+- **Gate the confirmation on the CAPTCHA score**: reCAPTCHA v3 gives a score from 0.0 (bot) to 1.0 (human). Without a billing account Google only returns 0.1, 0.3, 0.7 or 0.9.
+  - Accept the message at the usual threshold (0.5), so your copy still arrives.
+  - Send the visitor's confirmation only at the top score (0.9).
+  - Return the same success response either way, so a bot learns nothing.
+- **Alarm on reputation before SES acts**:
+  1. Create an **SNS** topic (Standard) in the same region as SES, add an **Email** subscription and confirm it from the inbox.
+  2. Go to **SES > Reputation metrics > Account-level**, choose **View in CloudWatch** on **Bounce rate**, then the bell icon to create an alarm.
+  3. Set **Maximum**, **1 hour**, **Greater/Equal** `0.025` (half the review level), **2 out of 2** datapoints, and **Treat missing data as ignore**. Notify the SNS topic **In alarm**.
+  4. Repeat for **Complaint rate** with `0.0005` and **1 out of 1**. At low volume one complaint can cross the review level, so you want to hear about the first one.
+  - The metrics are `AWS/SES` `Reputation.BounceRate` and `Reputation.ComplaintRate`, as fractions (`0.025` = 2.5%).
+  - Two alarms fit in the CloudWatch free tier (10 alarm metrics), and the first 1,000 SNS emails a month are free.
+
 ## Gotchas
 
 - **Email identity beats domain identity**: if you verify both `hello@example.com` and `example.com`, SES uses the most specific one. Settings like a custom MAIL FROM set on the domain are ignored for that address. Once the domain is verified, delete the email-address identity so there's only one place to configure.
