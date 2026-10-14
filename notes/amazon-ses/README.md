@@ -16,6 +16,7 @@
 - [Setting up SES for a domain](notes/amazon-ses/setup.md)
   - [Protecting a contact form from abuse](notes/amazon-ses/setup.md#protecting-a-contact-form-from-abuse)
 - [Least-privilege IAM credentials for sending](notes/amazon-ses/iam-credentials.md)
+- [Sending with a Vercel OIDC role instead of an access key](notes/amazon-ses/oidc-role.md)
 - [Email authentication: SPF, DKIM, DMARC and MAIL FROM](notes/amazon-ses/email-authentication.md)
 
 ## Reference

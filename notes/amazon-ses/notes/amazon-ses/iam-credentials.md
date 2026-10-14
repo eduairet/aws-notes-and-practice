@@ -62,7 +62,7 @@ CONTACT_EMAIL=hello@example.com
 
 An access key never expires on its own. The narrow policy limits the damage if it leaks (someone could send email as you until you revoke it). These options avoid storing a key at all:
 
-- **OIDC federation**: the host (Vercel, GitHub Actions and others) issues a short-lived identity token, and AWS trades it for temporary credentials through an IAM role (`sts:AssumeRoleWithWebIdentity`). Nothing secret is stored, but you need to learn an identity provider, a role trust policy and STS.
+- **OIDC federation**: the host (Vercel, GitHub Actions and others) issues a short-lived identity token, and AWS trades it for temporary credentials through an IAM role (`sts:AssumeRoleWithWebIdentity`). Nothing secret is stored, but you need to learn an identity provider, a role trust policy and STS. See [Sending with a Vercel OIDC role](oidc-role.md).
 - **IAM Roles Anywhere**: temporary credentials for machines holding an X.509 certificate from a CA you register. It's meant for servers in your own data center, not serverless hosts.
 - **Code running on AWS** (Lambda, ECS, EC2): use the execution role. No keys needed.
 

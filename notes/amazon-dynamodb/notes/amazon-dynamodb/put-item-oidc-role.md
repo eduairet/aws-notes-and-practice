@@ -9,6 +9,7 @@ Code running outside AWS (for example a serverless function on Vercel) can write
 3. The code signs a `PutItem` request with those credentials (Signature Version 4, service name `dynamodb`) and sends it.
 
 - Get the credentials **once per request** and reuse them for every AWS call in it, for example sending an email and saving a copy.
+- Setting up the identity provider and the role is covered in [Sending with a Vercel OIDC role](../../../amazon-ses/notes/amazon-ses/oidc-role.md).
 
 ## The Permission
 
