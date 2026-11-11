@@ -23,6 +23,7 @@
 - [AWS Lambda Overview](notes/aws-lambda/overview.md)
 - [Serverless Framework](notes/aws-lambda/serverless-framework.md)
 - [AWS SAM CLI](notes/aws-lambda/aws-sam-cli.md)
+- [AWS Step Functions](notes/aws-lambda/aws-step-functions.md)
 
 ## Reference
 
