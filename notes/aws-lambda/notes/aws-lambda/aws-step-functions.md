@@ -95,3 +95,24 @@ To create and manage AWS Step Functions workflows:
     }
   }
   ```
+
+## Step Functions & State Machine using VS Code
+
+- In VS Code, you can create and manage AWS Step Functions state machines using the AWS Toolkit extension.
+- Execution:
+  - In the AWS Explorer panel, locate your Step Functions state machine.
+  - Right-click on the state machine and select "Execute State Machine."
+  - Follow the prompts to provide any required input for the execution.
+  - Monitor the execution status and view logs directly within VS Code.
+    - You can use the "AWS: Render State Machine Graph" command to visualize the workflow.
+- Creation:
+  - Open the Command Palette (Ctrl+Shift+P) and search for "AWS: Create New Step Functions State Machine."
+  - Follow the prompts to define your state machine, including the workflow type, states, and transitions.
+  - You can also edit the state machine definition directly in the JSON or YAML file within VS Code.
+  - Use the AWS Toolkit to deploy and manage your state machine, as well as to monitor executions and view logs.
+- Update:
+  - In the AWS Explorer panel, locate your Step Functions state machine.
+  - Right-click on the state machine and select "Update State Machine."
+  - Edit the state machine definition as needed in the JSON or YAML file.
+  - Deploy the updated state machine using the AWS Toolkit.
+  - Monitor the execution status and view logs for the updated state machine within VS Code.
