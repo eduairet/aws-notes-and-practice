@@ -1,0 +1,27 @@
+# Local AWS Emulator: `docker compose up -d` from the repo root.
+# Docs: https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-docker.html
+# Then point your shell at it with emulator/env.ps1 (PowerShell) or emulator/env.sh (bash).
+# Another port: set EMULATOR_PORT before `docker compose up` and pass it to the env script.
+name: aws-notes-and-practice
+
+services:
+  aws-emulator:
+    build: ./emulator
+    image: aws-emulator
+    container_name: aws-emulator
+    command: ["--port", "${EMULATOR_PORT:-9297}", "--telemetry", "off"]
+    ports:
+      # Always bind to 127.0.0.1: omitting it exposes the emulator to your network.
+      - "127.0.0.1:${EMULATOR_PORT:-9297}:${EMULATOR_PORT:-9297}"
+    volumes:
+      # The emulator writes per-run credentials, config and ca.pem here; the host's
+      # AWS CLI/SDK reads them from ~/.aws/emulator/<port>/.
+      - ${USERPROFILE:-${HOME}}/.aws/emulator:/home/emulator/.aws/emulator
+    mem_limit: 2g
+    memswap_limit: 2g
+    healthcheck:
+      test: ["CMD", "curl", "-sfk", "https://127.0.0.1:${EMULATOR_PORT:-9297}/__admin/health"]
+      interval: 30s
+      start_period: 60s
+      start_interval: 2s
+      timeout: 3s
