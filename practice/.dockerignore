@@ -1,0 +1,2 @@
+# The image copies nothing; the repo is mounted at run time.
+*

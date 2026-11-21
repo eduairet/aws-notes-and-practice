@@ -3,7 +3,7 @@
 #   . ./emulator/env.ps1
 # Works in PowerShell 7+ on Windows, macOS and Linux.
 # Open a new terminal to go back to your real AWS credentials.
-param([int]$Port = 9297)
+param([int]$Port = ($env:EMULATOR_PORT ?? 9297))
 
 # $HOME is set by PowerShell on every OS; one segment per argument keeps separators native.
 $dir = Join-Path $HOME '.aws' 'emulator' "$Port"

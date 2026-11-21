@@ -2,7 +2,7 @@
 # Usage (source it so the variables stay in your shell):
 #   source emulator/env.sh
 # Open a new terminal to go back to your real AWS credentials.
-EMULATOR_PORT="${1:-9297}"
+EMULATOR_PORT="${1:-${EMULATOR_PORT:-9297}}"
 EMULATOR_DIR="$HOME/.aws/emulator/$EMULATOR_PORT"
 # Git Bash on Windows: hand the Windows AWS CLI a Windows-style path.
 if command -v cygpath >/dev/null 2>&1; then EMULATOR_DIR="$(cygpath -m "$EMULATOR_DIR")"; fi

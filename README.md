@@ -23,6 +23,12 @@ docker compose up -d          # start the emulator on https://127.0.0.1:9297
 aws sts get-caller-identity   # account 000000000000 = emulator
 ```
 
+Test every project under `practice/` against it (also runs in CI on each push):
+
+```powershell
+docker compose run --rm practice-tests
+```
+
 ## Practice
 
 - [AWS SAM CLI](practice/aws-lambda/README.md)

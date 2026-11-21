@@ -75,6 +75,22 @@ aws lambda wait function-active-v2 --function-name hello
 aws lambda invoke --function-name hello out.json; Get-Content out.json
 ```
 
+## Testing the Practice Projects
+
+`docker compose run --rm practice-tests` runs [`practice/run-tests.sh`](../../../../practice/run-tests.sh) in a container that has SAM CLI and pytest, so you don't need either on your machine. For every SAM project (a folder with `template.yaml`) under `practice/`, the script:
+
+1. Runs `tests/unit`.
+2. Runs `sam build` and `sam deploy` to the emulator. CloudFormation, S3, IAM, Lambda and API Gateway all run in the emulator.
+3. Runs `tests/integration` with `AWS_SAM_STACK_NAME` set to the deployed stack.
+
+The container shares the emulator's network, so `127.0.0.1:9297` reaches the emulator directly. That also means antivirus HTTPS scanning on your machine doesn't get in the way. GitHub Actions runs the same command on every push and pull request ([workflow](../../../../.github/workflows/practice-tests.yml)).
+
+Things to know when writing a new exercise:
+
+- Integration tests can call the `https://<id>.execute-api.us-east-1.amazonaws.com/...` URL from the stack outputs with plain `requests`, exactly as they would against real AWS. That hostname doesn't point at the emulator, but the emulator routes API Gateway calls by `Host` header. The runner loads the [`pytest_emulator`](../../../../practice/pytest_emulator.py) plugin, which sends those requests to the emulator with the original hostname in `Host`.
+- The runner builds with Python 3.13, the same version as the Lambda runtime. A project that needs another runtime needs that runtime added to [`practice/Dockerfile`](../../../../practice/Dockerfile).
+- `samconfig.toml` can keep your real profile. The runner passes `--profile default` and its own stack name.
+
 ## Stop, Reset and Clean Up
 
 ```powershell
@@ -99,5 +115,5 @@ There is no reset API. A restart is the only way to clear state. To stop automat
   - Don't add the antivirus's "self-signed root" to a trust store. It exists so that untrusted sites stay untrusted.
 - **Requests rejected with `AccessDenied` / `InvalidClientTokenId`**: real credentials are still set in the shell, or the emulator restarted and you didn't re-run the env script.
 - **Container exits with code 137**: it ran out of memory. Raise `mem_limit` / `memswap_limit`.
-- **Linux host, permission denied on `~/.aws/emulator`**: the container runs as UID 1000. Add `user: "<your uid>:<your gid>"` to the service.
+- **Linux host, permission denied on `~/.aws/emulator`**: the container runs as UID 1000 by default. Create the folder yourself (`mkdir -p ~/.aws/emulator`, so Docker doesn't create it as root), then start with your own IDs: `EMULATOR_UID=$(id -u) EMULATOR_GID=$(id -g) docker compose up -d`.
 - **Port already in use**: start on another port with `$env:EMULATOR_PORT = 9300; docker compose up -d` (bash: `EMULATOR_PORT=9300 docker compose up -d`). Then run the env script with that port: `. ./emulator/env.ps1 -Port 9300` or `source emulator/env.sh 9300`.

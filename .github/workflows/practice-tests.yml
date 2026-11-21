@@ -1,0 +1,36 @@
+# Runs practice/run-tests.sh against the AWS Emulator. No AWS account or secrets.
+name: Practice tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  practice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build images
+        run: docker compose --profile test build # both images in parallel
+
+      - name: Run practice tests
+        run: |
+          # The emulator writes its credentials and CA here as the runner's user.
+          mkdir -p ~/.aws/emulator
+          export EMULATOR_UID="$(id -u)" EMULATOR_GID="$(id -g)"
+          docker compose run --rm practice-tests
+
+      - name: Emulator logs
+        if: failure()
+        run: docker compose logs aws-emulator

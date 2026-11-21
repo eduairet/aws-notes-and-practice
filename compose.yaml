@@ -9,6 +9,9 @@ services:
     build: ./emulator
     image: aws-emulator
     container_name: aws-emulator
+    # Linux hosts: run as your own user so the emulator can write to the folder below
+    # (EMULATOR_UID=$(id -u) EMULATOR_GID=$(id -g)). Docker Desktop doesn't need it.
+    user: "${EMULATOR_UID:-1000}:${EMULATOR_GID:-1000}"
     command: ["--port", "${EMULATOR_PORT:-9297}", "--telemetry", "off"]
     ports:
       # Always bind to 127.0.0.1: omitting it exposes the emulator to your network.
@@ -25,3 +28,20 @@ services:
       start_period: 60s
       start_interval: 2s
       timeout: 3s
+
+  # `docker compose run --rm practice-tests`: see practice/run-tests.sh.
+  practice-tests:
+    profiles: [test] # not started by `docker compose up`
+    build: ./practice
+    # Share the emulator's network: 127.0.0.1:${EMULATOR_PORT} reaches it directly,
+    # without going through the host (no antivirus TLS interception).
+    network_mode: service:aws-emulator
+    depends_on:
+      aws-emulator:
+        condition: service_healthy
+    command: ["bash", "practice/run-tests.sh"]
+    environment:
+      EMULATOR_PORT: ${EMULATOR_PORT:-9297}
+    volumes:
+      - .:/repo:ro
+      - ${USERPROFILE:-${HOME}}/.aws/emulator:/root/.aws/emulator:ro
