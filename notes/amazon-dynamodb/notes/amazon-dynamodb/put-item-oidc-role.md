@@ -77,3 +77,7 @@ If the main job is something else (here, the email) and the item is a safety cop
 - **DynamoDB > Tables > (table) > Explore table items** lists the items. Open one to see every attribute.
 - **CloudTrail > Event history** shows the `AssumeRoleWithWebIdentity` call (a management event), with the token's subject as the user name.
 - It does **not** show `PutItem`. Item reads and writes are data events, which CloudTrail logs only if you turn on data events for a trail, and that costs extra. The item itself is the proof.
+
+## Practice
+
+- [Contact Messages exercise](../../../../practice/amazon-dynamodb/exercises/01-contact-messages/README.md): the write-only permission and temporary credentials, tested against the emulator.

@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  contact-messages
+
+  A small on-demand table with TTL, a function that writes one message, and a
+  write-only role for code running outside AWS.
+
+Parameters:
+  DeletionProtection:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+    Description: Set to false (and deploy) before `sam delete`, or the table can't be deleted.
+  EnforceWriteOnly:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+    Description: >
+      Add the dynamodb:ReturnValues=NONE condition, so a PutItem can't read back the item it
+      replaces. Only the AWS Emulator run turns it off (samconfig.toml [emulator]): it
+      wrongly denies every PutItem when the condition is present.
+
+Conditions:
+  WriteOnly: !Equals [!Ref EnforceWriteOnly, 'true']
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+
+Resources:
+  ContactMessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST # on-demand
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id # partition key only: one item per message
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt # Number, Unix epoch seconds
+        Enabled: true
+      DeletionProtectionEnabled: !Ref DeletionProtection
+
+  SaveMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: save_message/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ContactMessagesTable
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:PutItem # write only: no reads, scans, updates or deletes
+              Resource: !GetAtt ContactMessagesTable.Arn
+              Condition: !If
+                - WriteOnly
+                - StringEqualsIfExists:
+                    dynamodb:ReturnValues: NONE
+                - !Ref AWS::NoValue
+
+  # Stands in for the OIDC role from the notes: code outside AWS assumes it and
+  # gets 15-minute credentials that can only add items to this table.
+  ContactWriterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PutContactMessages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !GetAtt ContactMessagesTable.Arn
+                Condition: !If
+                  - WriteOnly
+                  - StringEqualsIfExists:
+                      dynamodb:ReturnValues: NONE
+                  - !Ref AWS::NoValue
+
+Outputs:
+  ContactMessagesTable:
+    Description: Table name
+    Value: !Ref ContactMessagesTable
+  SaveMessageFunction:
+    Description: Save Message Lambda Function name
+    Value: !Ref SaveMessageFunction
+  ContactWriterRoleArn:
+    Description: Write-only role for code outside AWS
+    Value: !GetAtt ContactWriterRole.Arn

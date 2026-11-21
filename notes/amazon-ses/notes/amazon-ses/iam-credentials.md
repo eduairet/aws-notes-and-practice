@@ -95,3 +95,7 @@ The first send from code failed, even though the policy above (with only the ide
 - **IAM > Policies > (policy) > Edit > JSON**, then **Next > Save changes** with **Set as default version** checked.
 - IAM keeps up to 5 versions, and you can roll back from the **Policy versions** tab.
 - Changes apply immediately. Existing keys keep working with the new permissions.
+
+## Practice
+
+- [Contact Form exercise](../../../../practice/amazon-ses/exercises/01-contact-form/README.md): a function that sends under this policy and keeps a backup copy.

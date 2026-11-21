@@ -90,6 +90,14 @@ Things to know when writing a new exercise:
 - Integration tests can call the `https://<id>.execute-api.us-east-1.amazonaws.com/...` URL from the stack outputs with plain `requests`, exactly as they would against real AWS. That hostname doesn't point at the emulator, but the emulator routes API Gateway calls by `Host` header. The runner loads the [`pytest_emulator`](../../../../practice/pytest_emulator.py) plugin, which sends those requests to the emulator with the original hostname in `Host`.
 - The runner builds with Python 3.13, the same version as the Lambda runtime. A project that needs another runtime needs that runtime added to [`practice/Dockerfile`](../../../../practice/Dockerfile).
 - `samconfig.toml` can keep your real profile. The runner passes `--profile default` and its own stack name.
+- When the emulator gets something wrong, keep the template correct for real AWS:
+  - Put emulator-only overrides in the project's `samconfig.toml` under `[emulator.deploy.parameters]`, for example `parameter_overrides`. The runner deploys with `--config-env emulator` when that section exists.
+  - Mark tests that only real AWS can pass with `@pytest.mark.real_aws_only`. They're skipped on the emulator.
+- Gaps found while building the exercises. Each one's README says how it works around them:
+  - Step Functions in CloudFormation: `DefinitionS3Location` (what SAM's `DefinitionUri` becomes), `DefinitionSubstitutions`, and intrinsics nested inside `Definition` are not resolved. Use a plain `AWS::StepFunctions::StateMachine` with `DefinitionString: !Sub`.
+  - IAM is enforced for actions and resources, including the roles Step Functions and Lambda use. But the `dynamodb:ReturnValues` condition key wrongly denies every call.
+  - SES doesn't enforce the sandbox, IAM conditions such as `ses:FromAddress`, or configuration-set permissions. Domain identities verify by themselves within seconds.
+  - STS rejects web identity tokens that a real issuer didn't sign, so OIDC flows can't be tested. `AssumeRole` gives the same kind of temporary credentials.
 
 ## Stop, Reset and Clean Up
 

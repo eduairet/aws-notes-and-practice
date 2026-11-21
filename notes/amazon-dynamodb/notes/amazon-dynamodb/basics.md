@@ -56,3 +56,7 @@ Prices for us-east-1, checked 2026-10-13:
 - **Resource-based policy**: empty. If an IAM role already grants access, a table policy is a second place to keep in sync.
 - The **Settings** tab of the new table shows the partition key, capacity mode, status and the table ARN, which the IAM policy will need.
 - Leave **point-in-time recovery** off unless you need backups. It adds cost.
+
+## Practice
+
+- [Contact Messages exercise](../../../../practice/amazon-dynamodb/exercises/01-contact-messages/README.md): the small on-demand table with TTL and deletion protection.

@@ -116,3 +116,7 @@ To create and manage AWS Step Functions workflows:
   - Edit the state machine definition as needed in the JSON or YAML file.
   - Deploy the updated state machine using the AWS Toolkit.
   - Monitor the execution status and view logs for the updated state machine within VS Code.
+
+## Practice
+
+- [Step Functions exercise](../../../../practice/aws-lambda/exercises/03-step-functions/README.md): an order workflow built from the Task state example above, with Retry, Catch and Choice.

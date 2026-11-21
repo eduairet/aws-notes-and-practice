@@ -25,7 +25,14 @@ test_project() {
   # --profile default: the emulator's generated config only has [default],
   # whatever profile samconfig.toml names for real deployments.
   sam build --profile default
-  sam deploy --profile default --stack-name "$stack" --resolve-s3 \
+  # A project can tune its emulator deploy (for example, parameter_overrides that
+  # switch off a policy condition the emulator mis-evaluates) in samconfig.toml
+  # under [emulator.deploy.parameters]. Real deploys keep using [default.*].
+  local config_env=()
+  if grep -q '^\[emulator\.deploy\.parameters\]' samconfig.toml 2>/dev/null; then
+    config_env=(--config-env emulator)
+  fi
+  sam deploy "${config_env[@]}" --profile default --stack-name "$stack" --resolve-s3 \
     --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
     --no-confirm-changeset --no-fail-on-empty-changeset
 

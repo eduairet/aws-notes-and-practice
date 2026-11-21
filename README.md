@@ -31,4 +31,6 @@ docker compose run --rm practice-tests
 
 ## Practice
 
-- [AWS SAM CLI](practice/aws-lambda/README.md)
+- [AWS Lambda (SAM CLI)](practice/aws-lambda/README.md)
+- [Amazon DynamoDB](practice/amazon-dynamodb/README.md)
+- [Amazon SES](practice/amazon-ses/README.md)

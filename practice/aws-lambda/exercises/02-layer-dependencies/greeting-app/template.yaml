@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  greeting-app
+
+  A function whose dependencies live in a Lambda layer.
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+
+Resources:
+  GreetingLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: greeting
+      Description: Shared greeting helpers plus the humanize package
+      ContentUri: layers/greeting/
+      CompatibleRuntimes:
+        - python3.13
+    Metadata:
+      BuildMethod: python3.13 # puts code + requirements.txt packages under python/
+
+  GreetingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: greeting_function/
+      Handler: app.lambda_handler
+      Layers:
+        - !Ref GreetingLayer
+
+Outputs:
+  GreetingFunction:
+    Description: Greeting Lambda Function name
+    Value: !Ref GreetingFunction
+  GreetingLayerArn:
+    Description: ARN of the published layer version
+    Value: !Ref GreetingLayer

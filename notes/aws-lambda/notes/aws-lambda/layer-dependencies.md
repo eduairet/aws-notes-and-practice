@@ -16,3 +16,7 @@ AWS Lambda layers allow you to manage and share common dependencies across multi
 2. In the "Layers" section, click "Add a layer".
 3. Choose "Custom layers" and select the layer you created.
 4. Click "Add" to attach the layer to your function.
+
+## Practice
+
+- [Layer Dependencies exercise](../../../../practice/aws-lambda/exercises/02-layer-dependencies/README.md): a SAM layer with a shared module and a pip dependency.

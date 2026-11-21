@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  order-workflow
+
+  Step Functions order workflow: Lambda task with Retry/Catch and a Choice state.
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+
+Resources:
+  ValidateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: validate_order/
+      Handler: app.lambda_handler
+
+  # The role Step Functions assumes to run the workflow. Without lambda:InvokeFunction
+  # the Task fails with Lambda.AWSLambdaException (not authorized).
+  OrderStateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeValidateOrder
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt ValidateOrderFunction.Arn
+
+  # Plain CloudFormation, not AWS::Serverless::StateMachine: see the exercise README.
+  OrderStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineType: STANDARD
+      RoleArn: !GetAtt OrderStateMachineRole.Arn
+      DefinitionString: !Sub |
+        {
+          "Comment": "Validate an order, then auto-approve it or send it to manual review.",
+          "StartAt": "ValidateOrder",
+          "States": {
+            "ValidateOrder": {
+              "Type": "Task",
+              "Resource": "${ValidateOrderFunction.Arn}",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "ResultPath": "$.error",
+                  "Next": "ErrorHandler"
+                }
+              ],
+              "Next": "NeedsReview?"
+            },
+            "NeedsReview?": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.total",
+                  "NumericGreaterThan": 100,
+                  "Next": "ManualReview"
+                }
+              ],
+              "Default": "AutoApprove"
+            },
+            "ManualReview": {
+              "Type": "Pass",
+              "Result": "manual-review",
+              "ResultPath": "$.decision",
+              "End": true
+            },
+            "AutoApprove": {
+              "Type": "Pass",
+              "Result": "approved",
+              "ResultPath": "$.decision",
+              "End": true
+            },
+            "ErrorHandler": {
+              "Type": "Fail",
+              "Error": "TaskFailed",
+              "Cause": "The task failed."
+            }
+          }
+        }
+
+Outputs:
+  OrderStateMachine:
+    Description: Order workflow state machine ARN
+    Value: !Ref OrderStateMachine
+  ValidateOrderFunction:
+    Description: Validate Order Lambda Function name
+    Value: !Ref ValidateOrderFunction

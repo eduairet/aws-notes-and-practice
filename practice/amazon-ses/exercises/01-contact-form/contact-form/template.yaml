@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  contact-form
+
+  A contact-form backend: send the message with SES, then keep a backup copy in
+  DynamoDB that can never break the send.
+
+Parameters:
+  SenderDomain:
+    Type: String
+    Default: example.com
+    Description: Domain the form sends from. SES must verify it (DKIM records) before sends work.
+  FromAddress:
+    Type: String
+    Default: hello@example.com
+    Description: Sender address on SenderDomain. The IAM policy allows sending only as this address.
+  ContactEmail:
+    Type: String
+    Default: hello@example.com
+    Description: Where form messages are delivered. In the SES sandbox it must be verified too.
+  CreateSenderIdentity:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+    Description: Set to false if SenderDomain is already an SES identity in this account and Region.
+
+Conditions:
+  ShouldCreateSenderIdentity: !Equals [!Ref CreateSenderIdentity, 'true']
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+
+Resources:
+  SenderIdentity:
+    Type: AWS::SES::EmailIdentity
+    Condition: ShouldCreateSenderIdentity
+    Properties:
+      EmailIdentity: !Ref SenderDomain
+
+  MessageCopiesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  ContactFormFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: contact_form/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          FROM_ADDRESS: !Ref FromAddress
+          CONTACT_EMAIL: !Ref ContactEmail
+          TABLE_NAME: !Ref MessageCopiesTable
+      Policies:
+        - Statement:
+            # Least privilege from the notes: send, as one address, from one identity.
+            # If a configuration set applies to sends, add its ARN to Resource too.
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: !Sub arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SenderDomain}
+              Condition:
+                StringEquals:
+                  ses:FromAddress: !Ref FromAddress
+            - Effect: Allow
+              Action: dynamodb:PutItem
+              Resource: !GetAtt MessageCopiesTable.Arn
+
+Outputs:
+  ContactFormFunction:
+    Description: Contact Form Lambda Function name
+    Value: !Ref ContactFormFunction
+  MessageCopiesTable:
+    Description: Table with a backup copy of each message
+    Value: !Ref MessageCopiesTable
+  SenderDomain:
+    Description: SES identity the form sends from
+    Value: !Ref SenderDomain
