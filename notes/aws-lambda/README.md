@@ -24,6 +24,7 @@
 - [Serverless Framework](notes/aws-lambda/serverless-framework.md)
 - [AWS SAM CLI](notes/aws-lambda/aws-sam-cli.md)
 - [AWS Step Functions](notes/aws-lambda/aws-step-functions.md)
+- [Layer Dependencies](notes/aws-lambda/layer-dependencies.md)
 
 ## Reference
 
